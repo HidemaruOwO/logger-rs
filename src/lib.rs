@@ -7,18 +7,17 @@ thread_local! {
     static LOGGER_INITIALIZED: RefCell<bool> = RefCell::new(false);
 }
 
-pub fn ensure_logger_initialized() {
-    LOGGER_INITIALIZED.with(|initialized| {
-        if !*initialized.borrow() {
-            init_logger(); // ロギングの初期化を行う関数を呼び出す
-            *initialized.borrow_mut() = true;
-        }
-    });
-}
+// pub fn ensure_logger_initialized() {
+//     LOGGER_INITIALIZED.with(|initialized| {
+//         if !*initialized.borrow() {
+//             init_logger(); // ロギングの初期化を行う関数を呼び出す
+//             *initialized.borrow_mut() = true;
+//         }
+//     });
+// }
 
-fn init_logger() {
+pub fn init_logger(filters: &[(Option<&str>, LevelFilter)]) {
     let mut builder = Builder::new();
-
     builder.format(|buf, record| {
         let level_color = match record.level() {
             Level::Trace => Color::White,
@@ -44,17 +43,29 @@ fn init_logger() {
         )
     });
 
-    builder.filter(None, LevelFilter::Trace);
+    for (module, level_filter) in filters {
+        match module {
+            Some(module_name) => {
+                builder.filter_module(module_name, *level_filter);
+            }
+            None => {
+                builder.filter(None, *level_filter);
+            }
+        }
+    }
+
     builder.write_style(env_logger::WriteStyle::Auto);
 
     builder.init();
 }
 
+// ログモジュールのフィルタリングを設定する関数
+
 #[macro_export]
 macro_rules! trace {
     ($($arg:tt)*) => {
         {
-            $crate::ensure_logger_initialized();
+            // $crate::ensure_logger_initialized();
             log::trace!($($arg)*);
         }
     };
@@ -64,7 +75,7 @@ macro_rules! trace {
 macro_rules! debug {
     ($($arg:tt)*) => {
         {
-            $crate::ensure_logger_initialized();
+            // $crate::ensure_logger_initialized();
             log::debug!($($arg)*);
         }
     };
@@ -74,7 +85,7 @@ macro_rules! debug {
 macro_rules! info {
     ($($arg:tt)*) => {
         {
-            $crate::ensure_logger_initialized();
+            // $crate::ensure_logger_initialized();
             log::info!($($arg)*);
         }
     };
@@ -84,7 +95,7 @@ macro_rules! info {
 macro_rules! warn {
     ($($arg:tt)*) => {
         {
-            $crate::ensure_logger_initialized();
+            // $crate::ensure_logger_initialized();
             log::warn!($($arg)*);
         }
     };
@@ -94,9 +105,8 @@ macro_rules! warn {
 macro_rules! error {
     ($($arg:tt)*) => {
         {
-            $crate::ensure_logger_initialized();
+            // $crate::ensure_logger_initialized();
             log::error!($($arg)*);
         }
     };
 }
-
