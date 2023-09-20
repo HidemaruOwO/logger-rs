@@ -1,12 +1,16 @@
 [package]
-name = "crate-template"
+name = "logger_rs"
 version = "0.1.0"
-authors = ["TODO"]
-description = "This is a template for creating rust-vmm repositories."
-repository = "https://github.com/rust-vmm/crate-template"
+authors = ["HidemaruOwO"]
+description = "A Custom logging library for Rust language"
+repository = "https://github.com/HidemaruOwO/logger-rs"
 readme = "README.md"
-keywords = ["virt"]
-license = "Apache-2.0 OR BSD-3-Clause"
+license = "MIT"
 edition = "2018"
 
 [dependencies]
+env_logger = "0.10.0"
+log = "0.4.20"
+
+[lib]
+path = "src/lib.rs"
