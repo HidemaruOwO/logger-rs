@@ -35,21 +35,31 @@ pub fn init_logger(filters: &[(Option<&str>, LevelFilter)]) {
         line_style.set_color(Color::Magenta);
 
         let args_string = record.args().to_string();
-        let output_len = format!(
-            "[{level}] {file}:{line}",
-            level = record.level(),
-            file = record.file().unwrap_or("____unknown")[4..].to_string(),
-            line = record.line().unwrap_or(0)
-        )
-        .chars()
-        .count();
-        let spaces = " ".repeat(output_len);
+        let lines: Vec<&str> = args_string.lines().collect();
+        let lines_len = lines.len();
         let mut new_args_string = String::new();
-        for (index, line) in args_string.lines().enumerate() {
-            if index == 0 {
-                new_args_string.push_str(line);
-            } else {
-                new_args_string.push_str(&format!("{}{}\n", spaces, line));
+
+        if lines_len == 1 {
+            new_args_string = args_string;
+        } else {
+            let output_len = format!(
+                "[{level}] {file}:{line}",
+                level = record.level(),
+                file = record.file().unwrap_or("____unknown")[4..].to_string(),
+                line = record.line().unwrap_or(0)
+            )
+            .chars()
+            .count();
+            let spaces = " ".repeat(output_len);
+
+            for (index, line) in lines.iter().enumerate() {
+                if index == 0 {
+                    new_args_string.push_str(&(line.to_string() + "\n"));
+                } else if index + 1 == lines_len {
+                    new_args_string = new_args_string.trim_end_matches("\n").to_string();
+                } else {
+                    new_args_string.push_str(&format!(" {}{}\n", spaces, line));
+                }
             }
         }
 
