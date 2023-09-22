@@ -26,18 +26,38 @@ pub fn init_logger(filters: &[(Option<&str>, LevelFilter)]) {
             Level::Warn => Color::Yellow,
             Level::Error => Color::Red,
         };
+
         let mut level_style = buf.style();
-        level_style.set_color(level_color);
         let mut file_style = buf.style();
-        file_style.set_color(Color::Cyan);
         let mut line_style = buf.style();
+        level_style.set_color(level_color);
+        file_style.set_color(Color::Cyan);
         line_style.set_color(Color::Magenta);
+
+        let args_string = record.args().to_string();
+        let output_len = format!(
+            "[{level}] {file}:{line}",
+            level = record.level(),
+            file = record.file().unwrap_or("____unknown")[4..].to_string(),
+            line = record.line().unwrap_or(0)
+        )
+        .chars()
+        .count();
+        let spaces = " ".repeat(output_len);
+        let mut new_args_string = String::new();
+        for (index, line) in args_string.lines().enumerate() {
+            if index == 0 {
+                new_args_string.push_str(line);
+            } else {
+                new_args_string.push_str(&format!("{}{}\n", spaces, line));
+            }
+        }
 
         writeln!(
             buf,
             "[{level}] {file}:{line} {args}",
             level = level_style.value(record.level()),
-            args = record.args(),
+            args = new_args_string,
             file = file_style.value(&record.file().unwrap_or("____unknown")[4..]),
             line = line_style.value(record.line().unwrap_or(0)),
         )
@@ -65,7 +85,7 @@ pub fn init_logger(filters: &[(Option<&str>, LevelFilter)]) {
 macro_rules! trace {
     ($($arg:tt)*) => {
         {
-            // $crate::ensure_logger_initialized();
+            // $create::ensure_logger_initialized();
             log::trace!($($arg)*);
         }
     };
@@ -75,7 +95,7 @@ macro_rules! trace {
 macro_rules! debug {
     ($($arg:tt)*) => {
         {
-            // $crate::ensure_logger_initialized();
+            // $create::ensure_logger_initialized();
             log::debug!($($arg)*);
         }
     };
@@ -85,7 +105,7 @@ macro_rules! debug {
 macro_rules! info {
     ($($arg:tt)*) => {
         {
-            // $crate::ensure_logger_initialized();
+            // $create::ensure_logger_initialized();
             log::info!($($arg)*);
         }
     };
@@ -95,7 +115,7 @@ macro_rules! info {
 macro_rules! warn {
     ($($arg:tt)*) => {
         {
-            // $crate::ensure_logger_initialized();
+            // $create::ensure_logger_initialized();
             log::warn!($($arg)*);
         }
     };
@@ -105,7 +125,7 @@ macro_rules! warn {
 macro_rules! error {
     ($($arg:tt)*) => {
         {
-            // $crate::ensure_logger_initialized();
+            // $create::ensure_logger_initialized();
             log::error!($($arg)*);
         }
     };
